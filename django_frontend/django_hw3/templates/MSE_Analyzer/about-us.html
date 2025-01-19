@@ -1,0 +1,60 @@
+{% extends 'MSE_Analyzer/index.html' %}
+
+{% block title %}
+About Us - MSE Analyzer
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h1>About Us</h1>
+        <p>
+            This website was created for the purposes of the homework assignments at the course Design and
+            Architecture of Software at FINKI (FCSE) 2024/2025.
+        </p>
+        <p>
+            The purpose of the app is to provide general
+            analysis of the Macedonian Stock Exchange, showcasing general trends and patterns, allowing users
+            to get a clean grasp over the history of the market situation.
+        </p>
+        <p>
+            This in turn helps users plan
+                and strategize future investments with a clear goal and a transparent view of past mistakes and
+                successes.
+        </p>
+        
+        <div>
+            &nbsp;
+        </div>
+        
+        <p>
+            Made with the help of:
+        </p>
+        
+        <ul class="list-group">
+                <li class="list-group-item">django</li>
+                <li class="list-group-item">Flask</li>
+                <li class="list-group-item">requests</li>
+                <li class="list-group-item">beautifulSoup4</li>
+                <li class="list-group-item">ta (Technical Analysis)</li>
+                <li class="list-group-item">pandas</li>
+                <li class="list-group-item">MongoDB Atlas</li>
+                <li class="list-group-item">Bootstrap</li>
+                <li class="list-group-item">d3js</li>
+        </ul>
+        
+        <div class="alert alert-info mt-4 text-center" role="alert">
+            <h4 class="alert-heading">What We Offer</h4>
+            <p>
+                Currently, we have implemented technical analysis.
+            </p>
+            <hr>
+            <p class="mb-0">
+                To be more precise, we offer analysis based on moving averages and movement oscillators at the moment.
+                In future versions, we will expand this to encompass all oscillator-type analysis.
+            </p>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

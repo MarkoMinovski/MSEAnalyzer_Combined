@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MSE Analyzer{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">MSE_A</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href='/'>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about_us">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/services">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="mb-4">Select Ticker and Interval</h1>
+        <form action="{% url 'analysed' %}" method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="tickerSelect" class="form-label">Select a Ticker</label>
+                <select class="form-select" id="tickerSelect" name="ticker" required>
+                    <option value="" disabled selected>Choose a ticker</option>
+                    {% for element in options_list %}
+                        <option value="{{ element.ticker }}"> {{ element.ticker }} </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
+            <div class="mb-3">
+                <label for="intervalSelect" class="form-label">Select an Interval</label>
+                <select class="form-select" id="intervalSelect" name="interval" required>
+                    <option value="" disabled selected>Choose an interval</option>
+                    <option value="last-week">Last Week</option>
+                    <option value="last-month">Last Month</option>
+                    <option value="last-year">Last Year</option>
+                </select>
+            </div>
+
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <footer class="blockquote-footer fixed-bottom">
+    <div class="container d-flex justify-content-between">
+        <div>
+            <span>Version:</span>
+            <span>1.0.1</span>
+        </div>
+        <div>
+            <span>Powered by:</span>
+            <span>Django, Flask</span>
+        </div>
+  </div>
+</footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

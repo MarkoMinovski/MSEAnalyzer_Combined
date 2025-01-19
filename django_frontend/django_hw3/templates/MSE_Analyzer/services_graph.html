@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MSE Analyzer{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+
+    <script>
+
+        async function getGraphData() {
+            const maxAttempts = 5;
+            let attempts = 0;
+            let isResolved = false;
+            let data = [];
+
+            const code = document.getElementById("ticker_code").value;
+            const interval_start_raw = document.getElementById("interval_start").value;
+            const interval_end_raw = document.getElementById("interval_end").value;
+
+            const interval_start = interval_start_raw.replaceAll("/", ".");
+            const interval_end = interval_end_raw.replaceAll("/", ".");
+
+            while ((attempts < maxAttempts) && !isResolved) {
+                try {
+                    const resp = await fetch(`http://localhost:5000/tickers/analyze/averages/${interval_start}/${interval_end}/${code}`);
+                    data = await resp.json();
+                    isResolved = true;
+                } catch (e) {
+                    console.log(`${e.message}`);
+                    attempts++;
+                }
+            }
+
+            return data
+        }
+
+        async function createGraph() {
+            const data = await getGraphData()
+
+            if (!data || data.length === 0) {
+                console.error("No data available (Failed to resolve promise?)");
+                return;
+            }
+
+
+
+            data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            console.log(data)
+
+            const margin = {top: 20, right: 50, bottom: 50, left: 50};
+            const width = 1200 - margin.left - margin.right;
+            const height = 800 - margin.top - margin.bottom;
+
+            // Parse date and create scales
+            const parseTime = d3.timeFormat("%b %d, %Y");
+            const x = d3.scaleTime()
+                .domain(d3.extent(data, d => new Date(d.date)))
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([
+                    d3.min(data, d => Math.min(d.last_trade_price_SMA, d.last_trade_price_EMA, d.last_trade_price_CMA)),
+                    d3.max(data, d => Math.max(d.last_trade_price_SMA, d.last_trade_price_EMA, d.last_trade_price_CMA))
+                ])
+                .range([height, 0]);
+
+            const svg = d3.select("#graph")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickFormat(d => parseTime(new Date(d))));
+
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+
+            const line = d3.line()
+                .x(d => x(new Date(d.date)))
+                .y(d => y(d.value));
+
+
+            const keys = ["last_trade_price_SMA", "last_trade_price_EMA", "last_trade_price_CMA"];
+            const colors = ["steelblue", "green", "orange"];
+
+
+            keys.forEach((key, i) => {
+                svg.append("path")
+                    .datum(data.map(d => ({date: d.date, value: d[key]})))
+                    .attr("class", "line")
+                    .attr("stroke", colors[i])
+                    .attr("fill", "none")
+                    .attr("stroke-width", 2)
+                    .attr("d", line);
+            });
+
+        }
+        
+
+        document.addEventListener("DOMContentLoaded", () => {
+            createGraph()
+        });
+
+    </script>
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">MSE_A</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href='/'>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about_us">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/services">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <input type="hidden" name="interval_start" id="interval_start" value="{{ interval_start }}">
+    <input type="hidden" name="interval_end" id="interval_end" value="{{ interval_end }}">
+    <input type="hidden" name="ticker_code" id="ticker_code" value="{{ ticker_code }}">
+
+
+    <div class="container mt-4">
+        <div id="graph"></div>
+    </div>
+
+    <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-8 mx-auto">
+
+                <h2>Legend</h2>
+
+                <ul class="list-group">
+                    <li class="list-group-item"><p style="color: steelblue">Close - Simple Moving Average</p></li>
+                    <li class="list-group-item"><p style="color: green">Close - Exponential Moving Average</p></li>
+                    <li class="list-group-item"><p style="color: orange">Close - Cumulative Moving Average</p></li>
+                </ul>
+
+                </div>
+        </div>
+    </div>
+
+    <div class="container my-5 max-w-80 max-h-80 overflow-auto">
+    <h1 class="text-center mb-4">Momentum Oscillators</h1>
+    <table class="table table-striped table-bordered">
+      <thead>
+        <tr>
+            <th>Date</th>
+            <th>Momentum AO</th>
+            <th>Momentum KAMA</th>
+            <th>Momentum PPO</th>
+            <th>Momentum PPO Hist</th>
+            <th>Momentum PPO Signal</th>
+            <th>Momentum PVO</th>
+            <th>Momentum PVO Hist</th>
+            <th>Momentum PVO Signal</th>
+            <th>Momentum ROC</th>
+            <th>Momentum RSI</th>
+            <th>Momentum Stoch</th>
+            <th>Momentum Stoch RSI</th>
+            <th>Momentum Stoch RSI D</th>
+            <th>Momentum Stoch RSI K</th>
+            <th>Momentum Stoch Signal</th>
+            <th>Momentum TSI</th>
+            <th>Momentum UO</th>
+            <th>Momentum WR</th>
+        </tr>
+      </thead>
+      <tbody id="data-table-body">
+            {% for row in json_array_momentum_oscillators %}
+            <tr>
+                {% for key, value in row.items %}
+                    <td> {{ value }} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+
+    <footer class="blockquote-footer">
+    <div class="container d-flex justify-content-between">
+        <div>
+            <span>Version:</span>
+            <span>1.0.1</span>
+        </div>
+        <div>
+            <span>Powered by:</span>
+            <span>Django, Flask</span>
+        </div>
+  </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
