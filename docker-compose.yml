@@ -3,7 +3,8 @@ version: '3.8'
 services:
   django:
     build:
-      context: ./django_frontend/django_hw3
+      image: diansregistry.azurecr.io/msediansapp-django:latest
+      dockerfile: Dockerfile
     container_name: django_frontend_revised
     ports:
       - "8000:8000"
@@ -14,7 +15,8 @@ services:
 
   flask:
     build:
-      context: ./flask_backend/Backend_Homework2
+      image: diansregistry.azurecr.io/msediansapp-flask:latest
+      dockerfile: Dockerfile
     container_name: flask_backend_revised
     ports:
       - "5000:5000"
