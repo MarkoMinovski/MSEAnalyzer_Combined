@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  django:
+    build:
+      context: ./django_frontend/django_hw3
+    container_name: django_frontend_revised
+    ports:
+      - "8000:8000"
+    environment:
+      - ALLOWED_HOSTS=django_frontend_revised,localhost
+    depends_on:
+      - flask
+
+  flask:
+    build:
+      context: ./flask_backend/Backend_Homework2
+    container_name: flask_backend_revised
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - MONGO_URI=mongodb+srv://marko_m:HhfpCcGObwf7Huxn@maincluster.zwq2b.mongodb.net/?retryWrites=true&w=majority&appName=MainCluster
